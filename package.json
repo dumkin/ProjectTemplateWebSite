@@ -1,0 +1,21 @@
+{
+  "name": "ProjectTemplateWebSite",
+  "version": "1.0.0",
+  "description": "Project template website",
+  "main": "index.js",
+  "repository": "github:Dumkin/ProjectTemplateWebSite",
+  "author": "Dumkin",
+  "license": "MIT",
+  "dependencies": {
+    "browser-sync": "^2.23.6",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^4.1.0",
+    "gulp-cache": "^1.0.2",
+    "gulp-clean-css": "^3.9.2",
+    "gulp-concat": "^2.6.1",
+    "gulp-imagemin": "^4.1.0",
+    "gulp-notify": "^3.2.0",
+    "gulp-sass": "^3.1.0",
+    "gulp-uglify": "^3.0.0"
+  }
+}
