@@ -2,10 +2,15 @@
 
 let source = {
     pageFiles: 'src/**/*.html',
-    fontFiles: 'src/fonts/*',
-    styleFiles: 'src/styles/*.sass',
-    scriptFiles: 'src/scripts/*.js',
+    fontFiles: 'src/fonts/**/*',
     imageFiles: 'src/images/**/*',
+
+    styleFile: 'src/styles/main.sass',
+
+    scriptFiles: [
+        'src/scripts/jquery-3.3.1.min.js',
+        'src/scripts/common.js'
+    ]
 };
 
 let distribution = {
@@ -61,7 +66,7 @@ gulp.task('fonts', function() {
 });
 
 gulp.task('styles', function() {
-    return gulp.src(source.styleFiles)
+    return gulp.src(source.styleFile)
                .pipe(sass({
                       errLogToConsole: true,
                       outputStyle: 'compressed',
