@@ -6,6 +6,7 @@ let source = {
     imageFiles: 'src/images/**/*',
 
     styleFile: 'src/styles/main.sass',
+    styleFiles: 'src/styles/**/*.sass',
 
     scriptFiles: [
         'src/scripts/jquery-3.3.1.min.js',
