@@ -8,10 +8,7 @@ let source = {
     styleFile: 'src/styles/main.sass',
     styleFiles: 'src/styles/**/*.sass',
 
-    scriptFiles: [
-        'src/scripts/jquery-3.3.1.min.js',
-        'src/scripts/common.js'
-    ]
+    scriptFile: 'src/scripts/common.js'
 };
 
 let distribution = {
@@ -37,6 +34,7 @@ let del          = require('del'),
     gulp         = require('gulp'),
     sass         = require('gulp-sass'),
     cache        = require('gulp-cache'),
+    rigger       = require('gulp-rigger'),
     notify       = require("gulp-notify"),
     concat       = require('gulp-concat'),
     uglify       = require('gulp-uglify'),
@@ -85,7 +83,8 @@ gulp.task('styles', function() {
 });
 
 gulp.task('scripts', function() {
-    return gulp.src(source.scriptFiles)
+    return gulp.src(source.scriptFile)
+               .pipe(rigger())
                .pipe(concat('common.js'))
                .pipe(uglify())
                .pipe(gulp.dest(distribution.scripts))
