@@ -43,28 +43,26 @@ let del          = require('del'),
     autoPrefixer = require('gulp-autoprefixer'),
     browserSync  = require('browser-sync');
 
-gulp.task('browser-sync', function() {
+function browserWatch(done) {
     browserSync({
         server: distribution.root,
         notify: false
     });
-});
-
-gulp.task('browser-reload', function() {
+    done();
+}
+function browserReload(done) {
     browserSync.reload();
-});
-
-gulp.task('pages', function() {
+    done();
+}
+function pages() {
     return gulp.src(source.pageFiles)
                .pipe(gulp.dest(distribution.root));
-});
-
-gulp.task('fonts', function() {
+}
+function fonts() {
     return gulp.src(source.fontFiles)
                .pipe(gulp.dest(distribution.fonts));
-});
-
-gulp.task('styles', function() {
+}
+function styles() {
     return gulp.src(source.styleFile)
                .pipe(sass({
                       errLogToConsole: true,
@@ -80,54 +78,60 @@ gulp.task('styles', function() {
                .on("error", notify.onError())
                .pipe(concat('common.css'))
                .pipe(gulp.dest(distribution.styles));
-});
-
-gulp.task('scripts', function() {
+}
+function scripts() {
     return gulp.src(source.scriptFile)
                .pipe(rigger())
                .pipe(concat('common.js'))
                .pipe(terser())
                .pipe(gulp.dest(distribution.scripts))
-});
-
-gulp.task('image', function() {
+}
+function images() {
     return gulp.src(source.imageFiles)
                .pipe(cache(imageMin()))
                .pipe(gulp.dest(distribution.images))
-});
-
-gulp.task('watch', [
-    'clearDistribution',
-    'clearCache',
-    'pages',
-    'fonts',
-    'styles',
-    'scripts',
-    'image',
-    'browser-sync'
-], function() {
-    gulp.watch(source.styleFiles, ['styles', 'browser-reload']);
-    gulp.watch(source.imageFiles, ['image', 'browser-reload']);
-    gulp.watch(source.scriptFiles, ['scripts', 'browser-reload']);
-    gulp.watch(source.pageFiles, ['pages', 'browser-reload']);
-});
-
-gulp.task('clearDistribution', function() {
-    return del.sync(distribution.root);
-});
-
-gulp.task('clearCache', function() {
+}
+function watch() {
+    gulp.watch(source.styleFiles, gulp.series(styles, browserReload));
+    gulp.watch(source.imageFiles, gulp.series(images, browserReload));
+    gulp.watch(source.scriptFiles, gulp.series(scripts, browserReload));
+    gulp.watch(source.pageFiles, gulp.series(pages, browserReload));
+}
+function clearDistribution() {
+    return del(distribution.root);
+}
+function clearCache() {
     return cache.clearAll();
-});
+}
 
-gulp.task('build', [
-    'clearDistribution',
-    'clearCache',
-    'pages',
-    'fonts',
-    'styles',
-    'scripts',
-    'image'
-]);
+gulp.task('build', gulp.series(
+    gulp.parallel(
+        clearDistribution,
+        clearCache
+    ),
+    gulp.parallel(
+        pages,
+        fonts,
+        styles,
+        scripts,
+        images
+    )
+));
 
-gulp.task('default', ['watch']);
+gulp.task('default', gulp.series(
+    gulp.parallel(
+        clearDistribution,
+        clearCache
+    ),
+    gulp.parallel(
+        pages,
+        fonts,
+        styles,
+        scripts,
+        images
+    ),
+    gulp.parallel(
+        browserWatch,
+        watch
+    )
+));
