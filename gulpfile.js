@@ -8,7 +8,8 @@ let source = {
     styleFile: 'src/styles/main.sass',
     styleFiles: 'src/styles/**/*.sass',
 
-    scriptFile: 'src/scripts/common.js'
+    scriptFile: 'src/scripts/common.js',
+    scriptFiles: 'src/scripts/**/*.js'
 };
 
 let distribution = {
@@ -37,9 +38,8 @@ let del          = require('del'),
     rigger       = require('gulp-rigger'),
     notify       = require("gulp-notify"),
     concat       = require('gulp-concat'),
-    uglify       = require('gulp-uglify'),
+    terser       = require('gulp-terser'),
     imageMin     = require('gulp-imagemin'),
-    cleanCss     = require('gulp-clean-css'),
     autoPrefixer = require('gulp-autoprefixer'),
     browserSync  = require('browser-sync');
 
@@ -86,7 +86,7 @@ gulp.task('scripts', function() {
     return gulp.src(source.scriptFile)
                .pipe(rigger())
                .pipe(concat('common.js'))
-               .pipe(uglify())
+               .pipe(terser())
                .pipe(gulp.dest(distribution.scripts))
 });
 
