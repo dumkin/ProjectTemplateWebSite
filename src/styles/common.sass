@@ -7,6 +7,7 @@
   padding: 0
   box-sizing: border-box
   font-family: $default-font
+  transition: all 0.3s ease
 
   &:before, &:after
     box-sizing: border-box
@@ -17,5 +18,8 @@
 ::selection
   background: #4252ff
   color: white
+
+.no-select
+  user-select: none
 
 @import "media"
