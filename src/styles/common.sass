@@ -1,0 +1,21 @@
+@import "libs"
+@import "vars"
+@import "fonts"
+
+*
+  margin: 0
+  padding: 0
+  box-sizing: border-box
+  font-family: $default-font
+
+  &:before, &:after
+    box-sizing: border-box
+
+:focus
+  outline: none
+
+::selection
+  background: #4252ff
+  color: white
+
+@import "media"

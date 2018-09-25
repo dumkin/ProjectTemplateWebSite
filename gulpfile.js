@@ -5,7 +5,7 @@ let source = {
     fontFiles: 'src/fonts/**/*',
     imageFiles: 'src/images/**/*',
 
-    styleFile: 'src/styles/main.sass',
+    styleFile: 'src/styles/common.sass',
     styleFiles: 'src/styles/**/*.sass',
 
     scriptFile: 'src/scripts/common.js',
@@ -96,6 +96,7 @@ function watch() {
     gulp.watch(source.imageFiles, gulp.series(images, browserReload));
     gulp.watch(source.scriptFiles, gulp.series(scripts, browserReload));
     gulp.watch(source.pageFiles, gulp.series(pages, browserReload));
+    gulp.watch(source.fontFiles, gulp.series(fonts, browserReload));
 }
 function clearDistribution() {
     return del(distribution.root);
