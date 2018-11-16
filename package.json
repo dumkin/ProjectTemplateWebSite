@@ -1,6 +1,6 @@
 {
   "name": "ProjectTemplateWebSite",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Project template website",
   "main": "index.js",
   "repository": "github:Dumkin/ProjectTemplateWebSite",
@@ -13,6 +13,7 @@
     "gulp-autoprefixer": "^6.0.0",
     "gulp-cache": "^1.0.2",
     "gulp-concat": "^2.6.1",
+    "gulp-htmlmin": "^5.0.1",
     "gulp-imagemin": "^4.1.0",
     "gulp-notify": "^3.2.0",
     "gulp-rigger": "^0.5.8",
