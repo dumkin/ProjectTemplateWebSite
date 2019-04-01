@@ -6,17 +6,16 @@ let root = "";
 
 let source = {
   pages: `${src}/**/*.html`,
-
   fonts: `${src}/fonts/**/*.+(eot|svg|ttf|woff|woff2)`,
-  imageFiles: `${src}/images/**/*`,
+  images: `${src}/images/**/*`,
 
-  styleFile: `${src}/styles/common.sass`,
-  styleFiles: `${src}/styles/**/*.+(sass|scss)`,
+  styles: `${src}/styles/*.+(sass|scss)`,
+  styleLibs: `${src}/styles/**/*.+(sass|scss)`,
 
-  scriptFile: `${src}/scripts/common.js`,
-  scriptFiles: `${src}/scripts/**/*.js`,
+  scripts: `${src}/scripts/*.js`,
+  scriptLibs: `${src}/scripts/**/*.js`,
 
-  serviceWorkerFile: `${src}/service-worker.js`
+  serviceWorkers: `${src}/*.sw.js`
 };
 
 let distribution = {
@@ -44,20 +43,21 @@ let del = require("del"),
   htmlMin = require("gulp-htmlmin");
 
 let buildConfig = {
-  pages: function() {
+  pages: function () {
     return gulp
       .src(source.pages)
+      .pipe(rigger())
       .pipe(htmlMin({ collapseWhitespace: true }))
       .pipe(gulp.dest(distribution.root));
   },
-  styles: function() {
+  styles: function () {
     return gulp
-      .src(source.styleFile)
+      .src(source.styles)
       .pipe(
         sass({
           errLogToConsole: true,
           outputStyle: "compressed",
-          includePaths: [source.styleFiles]
+          includePaths: [source.styleLibs]
         })
       )
       .pipe(
@@ -67,91 +67,80 @@ let buildConfig = {
         })
       )
       .on("error", notify.onError())
-      .pipe(concat("common.css"))
       .pipe(gulp.dest(distribution.styles));
   },
-  scripts: function() {
+  scripts: function () {
     return gulp
-      .src(source.scriptFile)
+      .src(source.scripts)
       .pipe(rigger())
-      .pipe(concat("common.js"))
       .pipe(terser())
       .pipe(gulp.dest(distribution.scripts));
   },
-  serviceWorker: function() {
+  serviceWorkers: function () {
     return gulp
-      .src(source.serviceWorkerFile)
+      .src(source.serviceWorkers)
       .pipe(rigger())
       .pipe(terser())
       .pipe(gulp.dest(distribution.root));
   },
-  images: function() {
+  images: function () {
     return gulp
-      .src(source.imageFiles)
+      .src(source.images)
       .pipe(cache(imageMin()))
       .pipe(gulp.dest(distribution.images));
   }
 };
 
 let watchConfig = {
-  pages: function() {
-    return gulp.src(source.pages).pipe(gulp.dest(distribution.root));
-  },
-  styles: function() {
+  pages: function () {
     return gulp
-      .src(source.styleFile)
+      .src(source.pages)
+      .pipe(rigger())
+      .pipe(gulp.dest(distribution.root));
+  },
+  styles: function () {
+    return gulp
+      .src(source.styles)
       .pipe(
         sass({
           errLogToConsole: true,
           outputStyle: "expanded",
-          includePaths: [source.styleFiles]
+          includePaths: [source.styleLibs]
         })
       )
-      .pipe(
-        autoPrefixer({
-          browsers: autoPrefixBrowserList,
-          grid: true
-        })
-      )
+      // .pipe(
+      //   autoPrefixer({
+      //     browsers: autoPrefixBrowserList,
+      //     grid: true
+      //   })
+      // )
       .on("error", notify.onError())
-      .pipe(concat("common.css"))
       .pipe(gulp.dest(distribution.styles));
   },
-  scripts: function() {
+  scripts: function () {
     return gulp
-      .src(source.scriptFile)
+      .src(source.scripts)
       .pipe(rigger())
-      .pipe(concat("common.js"))
       .pipe(gulp.dest(distribution.scripts));
   },
-  serviceWorker: function() {
+  serviceWorkers: function () {
     return gulp
-      .src(source.serviceWorkerFile)
+      .src(source.serviceWorkers)
       .pipe(rigger())
       .pipe(gulp.dest(distribution.root));
   },
-  images: function() {
-    return gulp.src(source.imageFiles).pipe(gulp.dest(distribution.images));
+  images: function () {
+    return gulp
+      .src(source.images)
+      .pipe(gulp.dest(distribution.images));
   },
-  watch: function() {
-    gulp.watch(
-      source.styleFiles,
-      gulp.series(watchConfig.styles, browserReload)
-    );
-    gulp.watch(
-      source.imageFiles,
-      gulp.series(watchConfig.images, browserReload)
-    );
-    gulp.watch(
-      source.scriptFiles,
-      gulp.series(watchConfig.scripts, browserReload)
-    );
-    gulp.watch(
-      source.serviceWorkerFile,
-      gulp.series(watchConfig.serviceWorker, browserReload)
-    );
+  watch: function () {
     gulp.watch(source.pages, gulp.series(watchConfig.pages, browserReload));
     gulp.watch(source.fonts, gulp.series(fonts, browserReload));
+    gulp.watch(source.images, gulp.series(watchConfig.images, browserReload));
+    gulp.watch(source.styleLibs, gulp.series(watchConfig.styles, browserReload));
+    gulp.watch(source.scriptLibs, gulp.series(watchConfig.scripts, browserReload));
+    gulp.watch(source.serviceWorkers, gulp.series(watchConfig.serviceWorkers, browserReload));
   }
 };
 
@@ -169,7 +158,8 @@ function browserReload(done) {
   done();
 }
 function fonts() {
-  return gulp.src(source.fonts).pipe(gulp.dest(distribution.fonts));
+  return gulp.src(source.fonts)
+    .pipe(gulp.dest(distribution.fonts));
 }
 function clearDistribution() {
   return del(distribution.root);
@@ -187,7 +177,7 @@ gulp.task(
       fonts,
       buildConfig.styles,
       buildConfig.scripts,
-      buildConfig.serviceWorker,
+      buildConfig.serviceWorkers,
       buildConfig.images
     )
   )
@@ -202,7 +192,7 @@ gulp.task(
       fonts,
       watchConfig.styles,
       watchConfig.scripts,
-      watchConfig.serviceWorker,
+      watchConfig.serviceWorkers,
       watchConfig.images
     ),
     gulp.parallel(browserWatch, watchConfig.watch)
