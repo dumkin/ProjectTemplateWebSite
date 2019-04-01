@@ -1,0 +1,31 @@
+@import "components/libs";
+@import "components/vars";
+@import "components/fonts";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+  font-family: $default-font;
+
+  &:before,
+  &:after {
+    box-sizing: border-box;
+  }
+  
+  &:focus {
+    outline: none;
+  }
+}
+
+::selection {
+  background: #4252ff;
+  color: white;
+}
+
+.no-select {
+  user-select: none;
+}
+
+@import "components/media";
