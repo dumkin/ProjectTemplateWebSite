@@ -27,5 +27,30 @@
 .no-select {
   user-select: none;
 }
+::placeholder {
+  color: #666;
+}
+
+::selection {
+  background-color: $accent;
+  color: #fff;
+}
+
+input, textarea {
+  outline: none;
+  &:focus:required:invalid { border-color: red }
+  &:required:valid { border-color: green }
+}
+
+body {
+  font-family: $roboto;
+  font-size: $fontsize;
+  min-width: 320px;
+  position: relative;
+  line-height: 1.65;
+  overflow-x: hidden;
+  color: $textcolor;
+}
+
 
 @import "components/media";

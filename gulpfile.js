@@ -1,200 +1,174 @@
 "use strict";
 
-let src = "src";
-let dist = "dist/";
-let root = "";
+const sourcePath = "src";
+const appPath = "dist";
 
-let source = {
-  pages: `${src}/**/*.html`,
-  fonts: `${src}/fonts/**/*.+(eot|svg|ttf|woff|woff2)`,
-  images: `${src}/images/**/*`,
+const paths = {
+  source: {
+    pages: `${sourcePath}/**/*.html`,
+    scripts: `${sourcePath}/scripts/*.js`,
+    scriptsLibs: `${sourcePath}/scripts/**/*.js`,
+    styles: `${sourcePath}/styles/*.+(sass|scss)`,
+    stylesLibs: `${sourcePath}/styles/**/*.+(sass|scss)`,
+    images: `${sourcePath}/images/**/*`,
+    fonts: `${sourcePath}/fonts/**/*.+(eot|svg|ttf|woff|woff2)`,
+  },
+  destination: {
+    pages: `${appPath}/`,
+    scripts: `${appPath}/scripts/`,
+    styles: `${appPath}/styles/`,
+    images: `${appPath}/images/`,
+    fonts: `${appPath}/fonts/`,
+  }
+}
 
-  styles: `${src}/styles/*.+(sass|scss)`,
-  styleLibs: `${src}/styles/**/*.+(sass|scss)`,
-
-  scripts: `${src}/scripts/*.js`,
-  scriptLibs: `${src}/scripts/**/*.js`,
-
-  serviceWorkers: `${src}/*.sw.js`
-};
-
-let distribution = {
-  dist: `${dist}`,
-  root: `${dist}${root}`,
-  styles: `${dist}${root}styles/`,
-  scripts: `${dist}${root}scripts/`,
-  images: `${dist}${root}images/`,
-  fonts: `${dist}${root}fonts/`
-};
-
-let autoPrefixBrowserList = ["last 10 version", "cover 99.5%", "last 2 years"];
-
-let del = require("del"),
-  gulp = require("gulp"),
-  sass = require("gulp-sass"),
-  cache = require("gulp-cache"),
-  rigger = require("gulp-rigger"),
-  notify = require("gulp-notify"),
-  concat = require("gulp-concat"),
-  terser = require("gulp-terser"),
-  imageMin = require("gulp-imagemin"),
-  autoPrefixer = require("gulp-autoprefixer"),
-  browserSync = require("browser-sync"),
-  htmlMin = require("gulp-htmlmin");
+const {task, src, dest, parallel, series, watch} = require('gulp');
+const sass = require('gulp-sass');
+const cleancss = require('gulp-clean-css');
+const browserSync = require('browser-sync').create();
+const uglify = require('gulp-uglify-es').default;
+const autoprefixer = require('gulp-autoprefixer');
+const imagemin = require('gulp-imagemin');
+const del = require('del');
+const htmlmin = require('gulp-htmlmin');
+const notify = require('gulp-notify');
+const cache = require('gulp-cache');
+const rigger = require('gulp-rigger');
 
 let buildConfig = {
   pages: function () {
-    return gulp
-      .src(source.pages)
-      .pipe(rigger())
-      .pipe(htmlMin({ collapseWhitespace: true }))
-      .pipe(gulp.dest(distribution.root));
+    return src(paths.source.pages)
+    .pipe(rigger())
+    .pipe(htmlmin({collapseWhitespace: true}))
+    .pipe(dest(paths.destination.pages));
   },
   styles: function () {
-    return gulp
-      .src(source.styles)
-      .pipe(
-        sass({
-          errLogToConsole: true,
-          outputStyle: "compressed",
-          includePaths: [source.styleLibs]
-        })
-      )
-      .pipe(
-        autoPrefixer({
-          browsers: autoPrefixBrowserList,
-          grid: true
-        })
-      )
-      .on("error", notify.onError())
-      .pipe(gulp.dest(distribution.styles));
+    return src(paths.source.styles)
+    .pipe(
+      sass({
+        errLogToConsole: true,
+        outputStyle: "compressed",
+        includePaths: [paths.source.stylesLibs]
+      })
+    )
+    .pipe(
+      autoprefixer({
+        grid: true
+      })
+    )
+    .pipe(cleancss({
+      level: {
+        1: {
+          specialComments: 0
+        }
+      }
+    }))
+    .on("error", notify.onError())
+    .pipe(dest(paths.destination.styles));
   },
   scripts: function () {
-    return gulp
-      .src(source.scripts)
-      .pipe(rigger())
-      .pipe(terser())
-      .pipe(gulp.dest(distribution.scripts));
-  },
-  serviceWorkers: function () {
-    return gulp
-      .src(source.serviceWorkers)
-      .pipe(rigger())
-      .pipe(terser())
-      .pipe(gulp.dest(distribution.root));
+    return src(paths.source.scripts)
+    .pipe(uglify())
+    .pipe(rigger())
+    .pipe(dest(paths.destination.scripts));
   },
   images: function () {
-    return gulp
-      .src(source.images)
-      .pipe(cache(imageMin()))
-      .pipe(gulp.dest(distribution.images));
+    return src(paths.source.images)
+    .pipe(cache(imagemin()))
+    .pipe(dest(paths.destination.images));
   }
 };
-
 let watchConfig = {
   pages: function () {
-    return gulp
-      .src(source.pages)
-      .pipe(rigger())
-      .pipe(gulp.dest(distribution.root));
+    return src(paths.source.pages)
+    .pipe(rigger())
+    .pipe(dest(paths.destination.pages));
   },
   styles: function () {
-    return gulp
-      .src(source.styles)
-      .pipe(
-        sass({
-          errLogToConsole: true,
-          outputStyle: "expanded",
-          includePaths: [source.styleLibs]
-        })
-      )
-      // .pipe(
-      //   autoPrefixer({
-      //     browsers: autoPrefixBrowserList,
-      //     grid: true
-      //   })
-      // )
-      .on("error", notify.onError())
-      .pipe(gulp.dest(distribution.styles));
+    return src(paths.source.styles)
+    .pipe(
+      sass({
+        errLogToConsole: true,
+        outputStyle: "expanded",
+        includePaths: [paths.source.stylesLibs]
+      })
+    )
+    .on("error", notify.onError())
+    .pipe(dest(paths.destination.styles))
+    .pipe(browserSync.stream());
   },
   scripts: function () {
-    return gulp
-      .src(source.scripts)
-      .pipe(rigger())
-      .pipe(gulp.dest(distribution.scripts));
-  },
-  serviceWorkers: function () {
-    return gulp
-      .src(source.serviceWorkers)
-      .pipe(rigger())
-      .pipe(gulp.dest(distribution.root));
+    return src(paths.source.scripts)
+    .pipe(rigger())
+    .pipe(dest(paths.destination.scripts))
+    .pipe(browserSync.stream());
   },
   images: function () {
-    return gulp
-      .src(source.images)
-      .pipe(gulp.dest(distribution.images));
+    return src(paths.source.images)
+    .pipe(dest(paths.destination.images));
   },
   watch: function () {
-    gulp.watch(source.pages, gulp.series(watchConfig.pages, browserReload));
-    gulp.watch(source.fonts, gulp.series(fonts, browserReload));
-    gulp.watch(source.images, gulp.series(watchConfig.images, browserReload));
-    gulp.watch(source.styleLibs, gulp.series(watchConfig.styles, browserReload));
-    gulp.watch(source.scriptLibs, gulp.series(watchConfig.scripts, browserReload));
-    gulp.watch(source.serviceWorkers, gulp.series(watchConfig.serviceWorkers, browserReload));
+    watch(paths.source.pages, series(watchConfig.pages, browserReload));
+    watch(paths.source.fonts, series(fonts, browserReload));
+    watch(paths.source.images, series(watchConfig.images, browserReload));
+    watch(paths.source.stylesLibs, watchConfig.styles);
+    watch(paths.source.scriptsLibs, watchConfig.scripts);
   }
 };
 
 function browserWatch(done) {
-  browserSync({
-    server: dist,
+  browserSync.init({
+    server: appPath,
     notify: false,
-    startPath: root,
+    startPath: "",
     open: false
   });
   done();
 }
+
 function browserReload(done) {
   browserSync.reload();
   done();
 }
+
 function fonts() {
-  return gulp.src(source.fonts)
-    .pipe(gulp.dest(distribution.fonts));
+  return src(paths.source.fonts)
+  .pipe(dest(paths.destination.fonts));
 }
-function clearDistribution() {
-  return del(distribution.root);
+
+function appClear() {
+  return del(appPath);
 }
-function clearCache() {
+
+function cacheClear() {
   return cache.clearAll();
 }
 
-gulp.task(
+task(
   "build",
-  gulp.series(
-    gulp.parallel(clearDistribution, clearCache),
-    gulp.parallel(
+  series(
+    parallel(appClear, cacheClear),
+    parallel(
       buildConfig.pages,
       fonts,
       buildConfig.styles,
       buildConfig.scripts,
-      buildConfig.serviceWorkers,
       buildConfig.images
     )
   )
 );
 
-gulp.task(
+task(
   "default",
-  gulp.series(
-    gulp.parallel(clearDistribution, clearCache),
-    gulp.parallel(
+  series(
+    parallel(appClear, cacheClear),
+    parallel(
       watchConfig.pages,
       fonts,
       watchConfig.styles,
       watchConfig.scripts,
-      watchConfig.serviceWorkers,
       watchConfig.images
     ),
-    gulp.parallel(browserWatch, watchConfig.watch)
+    parallel(browserWatch, watchConfig.watch)
   )
 );
